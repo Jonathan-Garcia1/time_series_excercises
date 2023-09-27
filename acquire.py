@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
-
-
+import requests
+from env import get_connection
 
 def get_people():
     
@@ -73,3 +73,40 @@ def acquire_data():
     people = get_data('people')
     planets = get_data('planets')
     starships = get_data('starships')
+
+
+def get_tsa():
+    query = '''
+            SELECT sale_date, sale_amount,
+            item_brand, item_name, item_price,
+            store_address, store_zipcode,
+            store_city, store_state
+            FROM sales
+            LEFT JOIN items USING(item_id)
+            LEFT JOIN stores USING(store_id)
+            '''
+
+    url = get_connection('tsa_item_demand')
+
+    df = pd.read_sql(query, url)
+    
+    df.to_csv('stores.csv')
+    
+    return df
+
+
+
+def get_opsd():
+    # URL of the data to download
+    url = "https://raw.githubusercontent.com/jenfly/opsd/master/opsd_germany_daily.csv"
+
+    # Send an HTTP GET request to the URL
+    response = requests.get(url)
+
+    # Read the content into a DataFrame regardless of the HTTP status code
+    df = pd.read_csv(io.StringIO(response.text), index_col=0)
+    
+    # Save the DataFrame to a CSV file
+    df.to_csv('opsd_germany_daily.csv')
+    
+    return df
